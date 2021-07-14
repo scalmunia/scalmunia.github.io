@@ -4,93 +4,80 @@ function $(selector) {
 }
 
 // Declaraciones
-function App() {
-  // Declaraciones de la App
+function App(onboardingDateString, nowString) {
+  const format = "DD/MM/YYYY HH:mm:ss";
+  const onboardingDate = moment(onboardingDateString, format);
+  const testStartDate = onboardingDate.clone().subtract(48, "hours");
 
-  const calcCounterOnboarding = () => { 
-    const now = moment();   
-    const onboarding = moment("21/07/2021 06:40:00", "DD/MM/YYYY HH:mm:ss");   
-    const diff = onboarding.diff(now);
-    const counters = moment.utc(diff).format("DD_HH_mm_ss").split("_");
+  function calcCounters(startDate, endDate) {
+    const diff = endDate.diff(startDate);
+    const duration = moment.duration(diff);
+
+    const counters = [
+      {
+        amount: duration.days(),
+        label: "días",
+      },
+      {
+        amount: duration.hours(),
+        label: "horas",
+      },
+      {
+        amount: duration.minutes(),
+        label: "minutos",
+      },
+      {
+        amount: duration.seconds(),
+        label: "segundos",
+      },
+    ];
 
     return counters;
-  };
+  }
 
-  const calcCounterTestDate = () => {
-    const now = moment(); 
-    const testDate = moment("19/07/2021 06:40:00", "DD/MM/YYYY HH:mm:ss"); 
-    const diff = testDate.diff(now);
-    const counters = moment.utc(diff).format("DD_HH_mm_ss").split("_");
-
-    return counters;
-  };
-
-  const calcCounter48HoursBefore = () => { 
-    const testDate = moment("19/07/2021 06:40:00", "DD/MM/YYYY HH:mm:ss");  
-    const onboarding = moment("21/07/2021 06:40:00", "DD/MM/YYYY HH:mm:ss"); 
-    const diff = onboarding.diff(testDate);
-    const counters = moment.utc(diff).format("DD_HH_mm_ss").split("_");
-
-    return counters;
-  };  
-    
-  const renderCounters = () => {
-    const labels = ["dias", "horas", "minutos", "segundos"];
-    const countdownOnboarding = calcCounterOnboarding()
+  function renderCountdown(counters, selector) {
+    const countdownHTML = counters
       .map(
-        (counter, index) => /*html*/ `
-        <div class="counter">
-          <div class="amount">${counter}</div>
-          <div class="label">${labels[index]}</div>
-        </div>
-      `
+        (counter) => /*html*/ `
+      <div class="counter">
+        <div class="amount">${counter.amount}</div>
+        <div class="label">${counter.label}</div>
+      </div>
+    `
       )
       .join("");
 
-    $("#main-countdown").innerHTML = countdownOnboarding;
-    
-    const nowTimeStamp = Date.now(); 
-    const testDateTimeStamp = Date.parse('Mon, 19 Jul 2021 06:40:00 GMT');
+    document.querySelector(selector).innerHTML = countdownHTML;
+  }
 
-    if(nowTimeStamp <= testDateTimeStamp) {
+  function renderOnboarding() {
+    const onboarding = calcCounters(moment(nowString), onboardingDate);
+    renderCountdown(onboarding, "#onboarding-countdown");
+  }
 
-      const countdownTestDate = calcCounterTestDate()
-        .map(
-          (counter, index) => /*html*/ `
-          <div class="counter">
-            <div class="amount">${counter}</div>
-            <div class="label">${labels[index]}</div>
-          </div>
-        `
-        )
-        .join("");
-  
-      $("#second-countdown").innerHTML = countdownTestDate;
+  function renderCovidTest() {
+    const selector = "#covid-test-countdown";
+    const now = moment(nowString);
+    const testBefore = calcCounters(moment(nowString), testStartDate);
 
+    if (now.isBefore(testStartDate)) {
+      renderCountdown(testBefore, selector);
     } else {
-      
-          const countdown48HoursBefore = calcCounter48HoursBefore()
-            .map(
-              (counter, index) => /*html*/ `
-              <div class="counter">
-                <div class="amount">${counter}</div>
-                <div class="label">${labels[index]}</div>
-              </div>
-            `
-            )
-            .join("");
-      
-          $("#second-countdown").innerHTML = countdown48HoursBefore;
-    };
-  };
+      document.querySelector(selector).innerHTML =
+        '<div class="alert">Ya puedes hacer la prueba</div>';
+    }
+  }
 
-  
-  // Ejecuciones de la App
+  function renderCounters() {
+    renderOnboarding();
+    renderCovidTest();
+  }
+
   renderCounters();
   setInterval(renderCounters, 1000);
-};
+}
 
 // Ejecuciones
-document.addEventListener("DOMContentLoaded", () => App());
-
-
+document.addEventListener("DOMContentLoaded", () =>
+  App("21/07/2021 06:40:00", "2021-07-20T18:33:32.325Z")
+);
