@@ -78,6 +78,4 @@ function App(onboardingDateString, nowString) {
 }
 
 // Ejecuciones
-document.addEventListener("DOMContentLoaded", () =>
-  App("21/07/2021 06:40:00", "2021-07-20T18:33:32.325Z")
-);
+document.addEventListener("DOMContentLoaded", () => App("21/07/2021 06:40:00"));
